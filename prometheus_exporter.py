@@ -102,10 +102,13 @@ def fetch_db_metrics():
         with sqlite3.connect(DB_PATH) as conn:
             cursor = conn.cursor()
             
-            # Get chain height
-            cursor.execute("SELECT MAX(height) FROM blocks")
-            height_result = cursor.fetchone()
-            chain_height = height_result[0] if height_result[0] else 0
+            # Get chain height (guard for missing table on fresh DB)
+            try:
+                cursor.execute("SELECT MAX(height) FROM blocks")
+                height_result = cursor.fetchone()
+                chain_height = height_result[0] if height_result and height_result[0] is not None else 0
+            except sqlite3.OperationalError:
+                chain_height = 0
             
             # Get total transactions
             cursor.execute("SELECT COUNT(*) FROM transactions")

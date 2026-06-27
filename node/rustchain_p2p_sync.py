@@ -246,9 +246,12 @@ class BlockSync:
 
     def get_local_block_height(self) -> int:
         """Get current local blockchain height"""
-        with sqlite3.connect(self.db_path) as conn:
-            row = conn.execute("SELECT MAX(height) FROM blocks").fetchone()
-            return row[0] if row[0] is not None else 0
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                row = conn.execute("SELECT MAX(height) FROM blocks").fetchone()
+                return row[0] if row and row[0] is not None else 0
+        except Exception:
+            return 0
 
     def fetch_blocks_from_peer(self, peer_url: str, start_height: int, limit: int = 100) -> List[Dict]:
         """Fetch blocks from a peer node"""

@@ -749,9 +749,12 @@ class BlockValidator:
         # 3. Check height is sequential
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT MAX(height) FROM blocks")
-            result = cursor.fetchone()
-            max_height = result[0] if result[0] is not None else -1
+            try:
+                cursor.execute("SELECT MAX(height) FROM blocks")
+                result = cursor.fetchone()
+                max_height = result[0] if result and result[0] is not None else -1
+            except Exception:
+                max_height = -1
 
             if block.height != max_height + 1:
                 return False, f"Invalid height: expected {max_height + 1}, got {block.height}"
