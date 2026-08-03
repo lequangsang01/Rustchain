@@ -2639,6 +2639,11 @@ def _detect_x86_vintage(cpu_brand: str, machine: str, simd_data: dict):
     cpu_lower = cpu_brand.lower()
     machine_lower = (machine or "").lower()
 
+    # Veto vintage classification if modern SIMD features (AVX, AVX2, AVX512, SSE4) are present
+    if simd_data and (simd_data.get("has_avx") or simd_data.get("has_avx2") or simd_data.get("has_avx512") or simd_data.get("has_sse4_1") or simd_data.get("has_sse4_2")):
+        print(f"[X86_VINTAGE] VETO: SIMD has modern AVX/SSE4 features on vintage claim: {cpu_brand[:50]!r}")
+        return None
+
     # Pentium M family — \b boundary + (?!\d) avoids false-matching "Pentium M4".
     if re.search(r"\bpentium(?:\(r\))?\s+m\b(?!\d)", cpu_lower):
         # Parse clock speed from brand string ("1500MHz" or "1.5GHz" form).
